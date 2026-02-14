@@ -53,8 +53,9 @@ app.use(errorHandler);
 
 if (require.main === module) {
     app.listen(config.port, () => {
-        console.log(`\nFinEdge API Server running on port ${config.port}`);
-        console.log(`Environment: ${config.nodeEnv}`);
+        console.log(`\n🚀 FinEdge API Server running on port ${config.port}`);
+        console.log(`📍 Environment: ${config.nodeEnv}`);
+        console.log(`💚 Health check: http://localhost:${config.port}/health\n`);
     });
 }
 
