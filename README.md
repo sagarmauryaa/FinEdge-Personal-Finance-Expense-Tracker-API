@@ -133,8 +133,6 @@ cp .env.example .env
 # 4. Start development server
 npm run dev
 
-# 5. Verify server is running
-curl http://localhost:3000/health
 ```
 
 ---
@@ -147,18 +145,10 @@ http://localhost:3000
 ```
 
 ### Authentication
-All endpoints except `/health`, `POST /users`, and `POST /users/login` require a JWT token:
+All endpoints except `POST /users`, and `POST /users/login` require a JWT token:
 ```
 Authorization: Bearer <your-jwt-token>
 ```
-
----
-
-### 🏥 Health Check
-
-| Method | Route | Description |
-|---|---|---|
-| GET | `/health` | Verify server is running |
 
 ---
 
@@ -266,8 +256,7 @@ POST /budgets
 npm test
 ```
 
-The test suite covers:
-- ✅ Health check endpoint
+The test suite covers: 
 - ✅ User registration, login, and profile
 - ✅ Transaction CRUD with filtering
 - ✅ Budget CRUD

@@ -1,0 +1,843 @@
+{
+    "info": {
+        "_postman_id": "finedge-api-collection",
+        "name": "FinEdge - Personal Finance & Expense Tracker API",
+        "description": "Complete API collection for FinEdge Personal Finance & Expense Tracker.\n\n## Authentication Flow\n1. **Register** a new user via `POST /users`\n2. **Login** via `POST /users/login` → returns `accessToken`, `refreshToken`, and `session`\n3. Access token is short-lived (15m). Use **Refresh Token** via `POST /users/refresh-token` to get new tokens.\n4. Tokens are auto-saved to collection variables on login and refresh.\n\n## Security Features\n- Access + Refresh token pair\n- Refresh token rotation (old token invalidated on each refresh)\n- Hashed token storage in JSON\n- Session management (view, revoke individual, revoke all)\n- User agent & IP tracking per session",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "sessionId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "transactionId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "budgetId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "description": "User registration, login, token refresh, logout, and session management.",
+            "item": [
+                {
+                    "name": "Register User",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Sagar Maurya\",\n    \"email\": \"sagar@example.com\",\n    \"password\": \"password123\",\n    \"preferences\": {\n        \"currency\": \"INR\",\n        \"theme\": \"dark\"\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        },
+                        "description": "Register a new user account. Returns user data without password."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if (res.success && res.data) {",
+                                    "    pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                                    "    pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                                    "    pm.collectionVariables.set('sessionId', res.data.session.id);",
+                                    "    console.log('Tokens and session saved to collection variables.');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"sagar@example.com\",\n    \"password\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with email and password. Returns accessToken (15m), refreshToken (7d), and session info.\n\n**Auto-saves** tokens and sessionId to collection variables."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Refresh Token",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if (res.success && res.data) {",
+                                    "    pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                                    "    pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                                    "    pm.collectionVariables.set('sessionId', res.data.session.id);",
+                                    "    console.log('New tokens and session saved to collection variables.');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/refresh-token",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "refresh-token"
+                            ]
+                        },
+                        "description": "Get a new access token using the refresh token. Implements token rotation — the old refresh token is invalidated and a new one is issued.\n\n**Auto-saves** new tokens and sessionId to collection variables."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "profile"
+                            ]
+                        },
+                        "description": "Get the authenticated user's profile. Requires valid access token."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Preferences",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"preferences\": {\n        \"currency\": \"USD\",\n        \"theme\": \"light\",\n        \"notifications\": true\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/preferences",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "preferences"
+                            ]
+                        },
+                        "description": "Update the authenticated user's preferences. Merges with existing preferences."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Active Sessions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/sessions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "sessions"
+                            ]
+                        },
+                        "description": "Get all active (non-revoked, non-expired) sessions for the authenticated user. Shows device info (user agent, IP) and expiry."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout (Current Session)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"sessionId\": \"{{sessionId}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/logout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "logout"
+                            ]
+                        },
+                        "description": "Revoke a specific session by its ID. The session's refresh token becomes invalid immediately."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout All Devices",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/logout-all",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "logout-all"
+                            ]
+                        },
+                        "description": "Revoke ALL active sessions for the authenticated user. Use this for \"logout from all devices\" functionality."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Transactions",
+            "description": "CRUD operations for income and expense transactions with filtering and auto-categorization.",
+            "item": [
+                {
+                    "name": "Create Transaction (Expense)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if (res.success && res.data) {",
+                                    "    pm.collectionVariables.set('transactionId', res.data.id);",
+                                    "    console.log('Transaction ID saved:', res.data.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"type\": \"expense\",\n    \"amount\": 500,\n    \"description\": \"Lunch at restaurant\",\n    \"date\": \"2026-02-10\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions"
+                            ]
+                        },
+                        "description": "Create a new expense transaction. If no category is provided, it auto-categorizes based on the description keywords (e.g., 'restaurant' → 'food').\n\n**Auto-saves** transaction ID to collection variables."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Transaction (Income)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"type\": \"income\",\n    \"amount\": 50000,\n    \"description\": \"Monthly salary\",\n    \"category\": \"salary\",\n    \"date\": \"2026-02-01\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions"
+                            ]
+                        },
+                        "description": "Create a new income transaction with an explicit category."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Transactions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions"
+                            ]
+                        },
+                        "description": "Get all transactions for the authenticated user, sorted by date (newest first)."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Transactions (Filter by Type)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions?type=expense",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions"
+                            ],
+                            "query": [
+                                {
+                                    "key": "type",
+                                    "value": "expense",
+                                    "description": "Filter by type: 'income' or 'expense'"
+                                }
+                            ]
+                        },
+                        "description": "Get transactions filtered by type (income/expense)."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Transactions (Filter by Category)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions?category=food",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions"
+                            ],
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "food",
+                                    "description": "Filter by category: food, transport, shopping, etc."
+                                }
+                            ]
+                        },
+                        "description": "Get transactions filtered by category."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Transactions (Filter by Date Range)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions?startDate=2026-02-01&endDate=2026-02-28",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions"
+                            ],
+                            "query": [
+                                {
+                                    "key": "startDate",
+                                    "value": "2026-02-01",
+                                    "description": "Start date (YYYY-MM-DD)"
+                                },
+                                {
+                                    "key": "endDate",
+                                    "value": "2026-02-28",
+                                    "description": "End date (YYYY-MM-DD)"
+                                }
+                            ]
+                        },
+                        "description": "Get transactions filtered by date range."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Transaction by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions",
+                                "{{transactionId}}"
+                            ]
+                        },
+                        "description": "Get a single transaction by its ID."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Transaction",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 750,\n    \"description\": \"Updated dinner at restaurant\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions",
+                                "{{transactionId}}"
+                            ]
+                        },
+                        "description": "Partially update a transaction. Only send the fields you want to change. Auto-recategorizes if description changes without explicit category."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Transaction",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "transactions",
+                                "{{transactionId}}"
+                            ]
+                        },
+                        "description": "Delete a transaction by its ID. Also invalidates related summary/analytics caches."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Budgets",
+            "description": "Create, read, and delete monthly budgets with category-level budgeting.",
+            "item": [
+                {
+                    "name": "Create/Update Budget",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const res = pm.response.json();",
+                                    "if (res.success && res.data) {",
+                                    "    pm.collectionVariables.set('budgetId', res.data.id);",
+                                    "    console.log('Budget ID saved:', res.data.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"month\": \"2026-02\",\n    \"monthlyGoal\": 30000,\n    \"savingsTarget\": 20000,\n    \"categoryBudgets\": {\n        \"food\": 5000,\n        \"transport\": 3000,\n        \"shopping\": 4000,\n        \"entertainment\": 2000\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/budgets",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "budgets"
+                            ]
+                        },
+                        "description": "Create a new budget or update an existing budget for a given month (upsert). If a budget for the same month already exists, it gets updated.\n\n**Auto-saves** budget ID to collection variables."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Budgets",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/budgets",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "budgets"
+                            ]
+                        },
+                        "description": "Get all budgets for the authenticated user."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Budget by Month",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/budgets/2026-02",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "budgets",
+                                "2026-02"
+                            ]
+                        },
+                        "description": "Get the budget for a specific month (format: YYYY-MM)."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Budget",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/budgets/{{budgetId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "budgets",
+                                "{{budgetId}}"
+                            ]
+                        },
+                        "description": "Delete a budget by its ID."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Summary & Analytics",
+            "description": "Income-expense summaries, monthly trends, AI saving tips, and budget comparisons.",
+            "item": [
+                {
+                    "name": "Get Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/summary",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "summary"
+                            ]
+                        },
+                        "description": "Get overall income-expense summary with category breakdown. Results are cached for performance."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Summary (Filtered by Month)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/summary?month=2026-02",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "summary"
+                            ],
+                            "query": [
+                                {
+                                    "key": "month",
+                                    "value": "2026-02",
+                                    "description": "Filter by month (YYYY-MM)"
+                                }
+                            ]
+                        },
+                        "description": "Get income-expense summary for a specific month."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Monthly Trends",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/summary/trends",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "summary",
+                                "trends"
+                            ]
+                        },
+                        "description": "Get month-by-month income, expense, and balance trends sorted chronologically."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Saving Tips",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/summary/tips",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "summary",
+                                "tips"
+                            ]
+                        },
+                        "description": "Get personalized saving tips based on spending patterns. Analyzes savings rate, top spending categories, and provides actionable recommendations."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Budget vs Actual Comparison",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{accessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/summary/budget/2026-02",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "summary",
+                                "budget",
+                                "2026-02"
+                            ]
+                        },
+                        "description": "Compare actual spending vs budgeted amounts for a specific month. Includes analysis with budget utilization percentage and savings progress."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}
