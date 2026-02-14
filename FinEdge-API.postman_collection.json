@@ -39,6 +39,24 @@
     ],
     "item": [
         {
+            "name": "Health Check",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/health",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "health"
+                    ]
+                },
+                "description": "Check if the API server is running. Returns server status, uptime, timestamp, and environment. No authentication required."
+            },
+            "response": []
+        },
+        {
             "name": "Auth",
             "description": "User registration, login, token refresh, logout, and session management.",
             "item": [
